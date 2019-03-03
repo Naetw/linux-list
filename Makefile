@@ -43,6 +43,11 @@ deps := $(TESTS:%:%.o.d)
 
 TESTS_OK = $(TESTS:=.ok)
 
+SORTS = \
+	merge-sort
+
+SORTS := $(addprefix examples/,$(SORTS))
+
 check: $(TESTS_OK)
 
 $(TESTS_OK): %.ok: %
@@ -59,6 +64,9 @@ $(TESTS_OK): %.ok: %
 $(TESTS): %: %.o
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
+
+sort: 
+	$(Q)$(CC) -o $(SORTS) $(CFLAGS) $(LDFLAGS) $(SORTS).c
 
 clean:
 	$(VECHO) "  Cleaning...\n"
