@@ -15,9 +15,6 @@ static uint16_t values[256];
  *
  * At first, use fast/slow strategy to get the middle node. Cut it by
  * list_cut_position, and then use list_splice to transform the ownership.
- *
- * Note: Make sure that the list is not circular before using fast/slow
- * strategy.
  */
 static void split_front_back(struct list_head *head,
                              struct list_head *front,
@@ -25,15 +22,12 @@ static void split_front_back(struct list_head *head,
 {
     struct list_head *fast, *slow;
 
-    // make it not circular
-    head->prev->next = NULL;
-
     slow = head->next;
     fast = slow->next;
-    while (fast != NULL) {
+    while (fast != head) {
         fast = fast->next;
 
-        if (fast == NULL) {
+        if (fast == head) {
             slow = slow->next;  // make slow ((n / 2) + 1)th element (1-based)
             break;
         }
@@ -41,9 +35,6 @@ static void split_front_back(struct list_head *head,
         slow = slow->next;
         fast = fast->next;
     }
-
-    // restore
-    head->prev->next = head;
 
     list_cut_position(front, head, slow->prev);
     list_splice(head, back);
