@@ -39,7 +39,7 @@ TESTS = \
 
 TESTS := $(addprefix tests/,$(TESTS))
 # dependency of source files
-deps := $(TESTS:%:%.o.d)
+deps := $(TESTS:%=%.o.d)
 
 TESTS_OK = $(TESTS:=.ok)
 
@@ -56,10 +56,9 @@ $(TESTS_OK): %.ok: %
 	@touch $@
 
 # standard build rules
-.SUFFIXES: .o .c
-.c.o:
+%.o: %.c
 	$(VECHO) "  CC\t$@\n"
-	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD -MF $@.d $<
+	$(Q)$(CC) -o $@ $(CFLAGS) -c -MMD $<
 
 $(TESTS): %: %.o
 	$(VECHO) "  LD\t$@\n"
