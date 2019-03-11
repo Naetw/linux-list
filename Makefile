@@ -43,11 +43,6 @@ deps := $(TESTS:%=%.o.d)
 
 TESTS_OK = $(TESTS:=.ok)
 
-SORTS = \
-	merge-sort
-
-SORTS := $(addprefix examples/,$(SORTS))
-
 check: $(TESTS_OK)
 
 $(TESTS_OK): %.ok: %
@@ -64,11 +59,25 @@ $(TESTS): %: %.o
 	$(VECHO) "  LD\t$@\n"
 	$(Q)$(CC) -o $@ $^ $(LDFLAGS)
 
-sort: 
-	$(Q)$(CC) -o $(SORTS) $(CFLAGS) $(LDFLAGS) $(SORTS).c
+SORTS = \
+	merge-sort \
+	quick-sort \
+	insert-sort \
+
+SORTS := $(addprefix examples/,$(SORTS))
+
+sort: $(SORTS)
+	@echo
+	./scripts/driver.py
+	@echo
+	gnuplot normal.gp
+	@echo normal.png and qm.png generated
+
+$(SORTS): %: %.c
+	$(CC) -o $@ -I./include $(LDFLAGS) $<
 
 clean:
 	$(VECHO) "  Cleaning...\n"
-	$(Q)$(RM) $(TESTS) $(TESTS_OK) $(TESTS:=.o) $(TESTS:=.o.d)
+	$(Q)$(RM) $(TESTS) $(TESTS_OK) $(TESTS:=.o) $(deps) $(SORTS)
 
 -include $(deps)

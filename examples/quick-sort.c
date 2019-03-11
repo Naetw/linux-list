@@ -4,8 +4,6 @@
 
 #include "common.h"
 
-static uint16_t values[256];
-
 static void list_qsort(struct list_head *head)
 {
     struct list_head list_less, list_greater;
@@ -36,19 +34,24 @@ static void list_qsort(struct list_head *head)
     list_splice_tail(&list_greater, head);
 }
 
-int main(void)
+int main(int argc, const char *argv[])
 {
+    if (argc < 2) {
+        printf("Usage: %s input_size\n", argv[0]);
+        return -1;
+    }
     struct list_head testlist;
     struct listitem *item, *is = NULL;
-    size_t i;
+    size_t i, array_size = strtol(argv[1], NULL, 10);
+    uint16_t *values = (uint16_t *) malloc(sizeof(uint16_t) * array_size);
 
-    random_shuffle_array(values, (uint16_t) ARRAY_SIZE(values));
+    random_shuffle_array(values, (uint16_t) array_size);
 
     INIT_LIST_HEAD(&testlist);
 
     assert(list_empty(&testlist));
 
-    for (i = 0; i < ARRAY_SIZE(values); i++) {
+    for (i = 0; i < array_size; i++) {
         item = (struct listitem *) malloc(sizeof(*item));
         assert(item);
         item->i = values[i];
@@ -57,8 +60,14 @@ int main(void)
 
     assert(!list_empty(&testlist));
 
-    qsort(values, ARRAY_SIZE(values), sizeof(values[0]), cmpint);
+    qsort(values, array_size, sizeof(values[0]), cmpint);
+
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     list_qsort(&testlist);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    printf("%lf\t", time_diff(&start, &end));
 
     i = 0;
     list_for_each_entry_safe (item, is, &testlist, list) {
@@ -68,8 +77,10 @@ int main(void)
         i++;
     }
 
-    assert(i == ARRAY_SIZE(values));
+    assert(i == array_size);
     assert(list_empty(&testlist));
+
+    free(values);
 
     return 0;
 }
